@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Intelligence Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Network Intelligence Dashboard</h1>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">System Health</h5>
+                        <div id="health-status">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Network Status</h5>
+                        <div id="network-status">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Active Alerts</h5>
+                        <div id="active-alerts">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Alerts</h5>
+                        <table class="table table-striped" id="alerts-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Alerts will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function fetchHealth() {
+            const res = await fetch('/api/health');
+            const data = await res.json();
+            document.getElementById('health-status').innerText = data.status + ' (' + data.timestamp + ')';
+        }
+        async function fetchNetworkStatus() {
+            const res = await fetch('/api/network/status');
+            const data = await res.json();
+            document.getElementById('network-status').innerText = data.status + ' (Active Alerts: ' + data.active_alerts + ')';
+        }
+        async function fetchAlerts() {
+            const res = await fetch('/api/alerts?status=active');
+            const data = await res.json();
+            document.getElementById('active-alerts').innerText = data.active;
+            const tbody = document.querySelector('#alerts-table tbody');
+            tbody.innerHTML = '';
+            data.alerts.forEach(alert => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${alert.id}</td><td>${alert.type}</td><td>${alert.severity}</td><td>${alert.description}</td><td>${alert.status}</td><td>${alert.timestamp}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        fetchHealth();
+        fetchNetworkStatus();
+        fetchAlerts();
+        setInterval(fetchHealth, 10000);
+        setInterval(fetchNetworkStatus, 10000);
+        setInterval(fetchAlerts, 10000);
+    </script>
+</body>
+</html> 
