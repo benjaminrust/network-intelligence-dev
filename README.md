@@ -1,3 +1,5 @@
+⚠️ **DISCLAIMER**: This project is a proof of concept and not ready for production use. It's provided as a starting point for those looking to build similar integration platforms.
+
 # Network Intelligence - Development
 
 A Flask-based network intelligence and security monitoring application for development environment.
