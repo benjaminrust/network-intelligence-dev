@@ -26,5 +26,10 @@ def test_procfile():
     procfile = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'Procfile')
     assert os.path.exists(procfile), "Procfile should exist"
 
+def test_ci_working():
+    """Test to verify CI pipeline is working"""
+    # This test ensures our CI setup is functioning
+    assert True, "CI pipeline is working correctly"
+
 if __name__ == "__main__":
     pytest.main([__file__]) 
