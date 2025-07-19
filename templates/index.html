@@ -4,91 +4,505 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Intelligence Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .status-card {
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .alert-high {
+            border-left: 5px solid #dc3545;
+        }
+        .alert-medium {
+            border-left: 5px solid #ffc107;
+        }
+        .alert-low {
+            border-left: 5px solid #28a745;
+        }
+        .real-time-indicator {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .network-map {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+        }
+        .threat-indicator {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+    </style>
 </head>
-<body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Network Intelligence Dashboard</h1>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">System Health</h5>
-                        <div id="health-status">Loading...</div>
-                    </div>
-                </div>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt"></i> Network Intelligence
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <i class="fas fa-circle text-success real-time-indicator"></i> Live Monitoring
+                </span>
             </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Status Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card status-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-network-wired fa-2x text-primary mb-2"></i>
                         <h5 class="card-title">Network Status</h5>
-                        <div id="network-status">Loading...</div>
+                        <h3 class="text-success" id="network-status">Operational</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
+            <div class="col-md-3">
+                <div class="card status-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
                         <h5 class="card-title">Active Alerts</h5>
-                        <div id="active-alerts">Loading...</div>
+                        <h3 class="text-warning" id="active-alerts">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card status-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                        <h5 class="card-title">Risk Score</h5>
+                        <h3 class="text-info" id="risk-score">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card status-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-database fa-2x text-secondary mb-2"></i>
+                        <h5 class="card-title">Events Today</h5>
+                        <h3 class="text-secondary" id="events-today">0</h3>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Real-time Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h5><i class="fas fa-chart-bar"></i> Network Traffic</h5>
+                    <canvas id="trafficChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h5><i class="fas fa-shield-alt"></i> Security Events</h5>
+                    <canvas id="securityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
         <div class="row">
+            <!-- Recent Events -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Recent Security Events</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="events-list">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Loading events...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threat Intelligence -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bug"></i> Threat Intelligence</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="threat-indicators">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Loading threats...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cache Status -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-memory"></i> Cache Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="cache-stats">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Loading cache stats...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Analysis -->
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-search"></i> Network Analysis</h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Recent Alerts</h5>
-                        <table class="table table-striped" id="alerts-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Type</th>
-                                    <th>Severity</th>
-                                    <th>Description</th>
-                                    <th>Status</th>
-                                    <th>Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Alerts will be loaded here -->
-                            </tbody>
-                        </table>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <form id="traffic-analysis-form">
+                                    <div class="mb-3">
+                                        <label for="source-ip" class="form-label">Source IP</label>
+                                        <input type="text" class="form-control" id="source-ip" placeholder="192.168.1.1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="connection-count" class="form-label">Connection Count</label>
+                                        <input type="number" class="form-control" id="connection-count" value="100">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="failed-attempts" class="form-label">Failed Auth Attempts</label>
+                                        <input type="number" class="form-control" id="failed-attempts" value="5">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Analyze Traffic
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="analysis-results">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-chart-line"></i> Analysis results will appear here
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        async function fetchHealth() {
-            const res = await fetch('/api/health');
-            const data = await res.json();
-            document.getElementById('health-status').innerText = data.status + ' (' + data.timestamp + ')';
-        }
-        async function fetchNetworkStatus() {
-            const res = await fetch('/api/network/status');
-            const data = await res.json();
-            document.getElementById('network-status').innerText = data.status + ' (Active Alerts: ' + data.active_alerts + ')';
-        }
-        async function fetchAlerts() {
-            const res = await fetch('/api/alerts?status=active');
-            const data = await res.json();
-            document.getElementById('active-alerts').innerText = data.active;
-            const tbody = document.querySelector('#alerts-table tbody');
-            tbody.innerHTML = '';
-            data.alerts.forEach(alert => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${alert.id}</td><td>${alert.type}</td><td>${alert.severity}</td><td>${alert.description}</td><td>${alert.status}</td><td>${alert.timestamp}</td>`;
-                tbody.appendChild(tr);
+        // Global variables
+        let trafficChart, securityChart;
+        let updateInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDashboardData();
+            setupEventListeners();
+            
+            // Update data every 30 seconds
+            updateInterval = setInterval(loadDashboardData, 30000);
+        });
+
+        function initializeCharts() {
+            // Traffic Chart
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            trafficChart = new Chart(trafficCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Network Traffic',
+                        data: [],
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Security Chart
+            const securityCtx = document.getElementById('securityChart').getContext('2d');
+            securityChart = new Chart(securityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low', 'Medium', 'High'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
             });
         }
-        fetchHealth();
-        fetchNetworkStatus();
-        fetchAlerts();
-        setInterval(fetchHealth, 10000);
-        setInterval(fetchNetworkStatus, 10000);
-        setInterval(fetchAlerts, 10000);
+
+        function loadDashboardData() {
+            loadNetworkStatus();
+            loadSecurityEvents();
+            loadThreatIndicators();
+            loadCacheStats();
+        }
+
+        function loadNetworkStatus() {
+            fetch('/api/network/status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('network-status').textContent = data.status;
+                    document.getElementById('active-alerts').textContent = data.active_alerts;
+                    
+                    // Update metrics
+                    if (data.stats) {
+                        document.getElementById('events-today').textContent = data.stats.total_connections || 0;
+                    }
+                })
+                .catch(error => console.error('Error loading network status:', error));
+        }
+
+        function loadSecurityEvents() {
+            fetch('/api/events?limit=10')
+                .then(response => response.json())
+                .then(data => {
+                    const eventsList = document.getElementById('events-list');
+                    if (data.events && data.events.length > 0) {
+                        eventsList.innerHTML = data.events.map(event => `
+                            <div class="alert alert-${getSeverityClass(event.severity)} mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>${event.event_type}</strong> - ${event.source_ip || 'Unknown IP'}
+                                    </div>
+                                    <small>${new Date(event.timestamp).toLocaleTimeString()}</small>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge bg-${getSeverityClass(event.severity)}">${event.severity}</span>
+                                    <span class="badge bg-secondary">Risk: ${event.risk_score || 0}</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        eventsList.innerHTML = '<div class="text-center text-muted">No recent events</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading security events:', error);
+                    document.getElementById('events-list').innerHTML = '<div class="text-center text-danger">Error loading events</div>';
+                });
+        }
+
+        function loadThreatIndicators() {
+            fetch('/api/threats/indicators')
+                .then(response => response.json())
+                .then(data => {
+                    const threatList = document.getElementById('threat-indicators');
+                    if (data.indicators && data.indicators.length > 0) {
+                        threatList.innerHTML = data.indicators.map(indicator => `
+                            <div class="threat-indicator">
+                                <div class="d-flex justify-content-between">
+                                    <strong>${indicator.type}</strong>
+                                    <span class="badge bg-${getConfidenceClass(indicator.confidence)}">${indicator.confidence}</span>
+                                </div>
+                                <div class="small text-muted">${indicator.value}</div>
+                                <div class="small">${indicator.description}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        threatList.innerHTML = '<div class="text-center text-muted">No threat indicators</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading threat indicators:', error);
+                    document.getElementById('threat-indicators').innerHTML = '<div class="text-center text-danger">Error loading threats</div>';
+                });
+        }
+
+        function loadCacheStats() {
+            fetch('/api/cache/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const cacheStats = document.getElementById('cache-stats');
+                    if (data && Object.keys(data).length > 0) {
+                        cacheStats.innerHTML = `
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="small text-muted">Memory</div>
+                                    <div class="fw-bold">${data.used_memory_human || 'N/A'}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Clients</div>
+                                    <div class="fw-bold">${data.connected_clients || 0}</div>
+                                </div>
+                            </div>
+                            <div class="row text-center mt-2">
+                                <div class="col-6">
+                                    <div class="small text-muted">Hits</div>
+                                    <div class="fw-bold">${data.keyspace_hits || 0}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Misses</div>
+                                    <div class="fw-bold">${data.keyspace_misses || 0}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        cacheStats.innerHTML = '<div class="text-center text-muted">Cache stats unavailable</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading cache stats:', error);
+                    document.getElementById('cache-stats').innerHTML = '<div class="text-center text-danger">Error loading cache stats</div>';
+                });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('traffic-analysis-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                analyzeTraffic();
+            });
+        }
+
+        function analyzeTraffic() {
+            const trafficData = {
+                source_ip: document.getElementById('source-ip').value,
+                connection_count: parseInt(document.getElementById('connection-count').value),
+                failed_auth_attempts: parseInt(document.getElementById('failed-attempts').value)
+            };
+
+            fetch('/api/network/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(trafficData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('analysis-results');
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h6>Analysis Results</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Risk Score:</strong> 
+                                <span class="badge bg-${getRiskClass(data.risk_score)}">${data.risk_score}</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Threats Detected:</strong>
+                                <ul class="list-unstyled">
+                                    ${data.threats_detected.map(threat => `<li><i class="fas fa-exclamation-triangle text-warning"></i> ${threat}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Recommendations:</strong>
+                                <ul class="list-unstyled">
+                                    ${data.recommendations.map(rec => `<li><i class="fas fa-lightbulb text-info"></i> ${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('Error analyzing traffic:', error);
+                document.getElementById('analysis-results').innerHTML = '<div class="alert alert-danger">Error analyzing traffic</div>';
+            });
+        }
+
+        function getSeverityClass(severity) {
+            switch(severity.toLowerCase()) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function getConfidenceClass(confidence) {
+            switch(confidence.toLowerCase()) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function getRiskClass(riskScore) {
+            if (riskScore >= 80) return 'danger';
+            if (riskScore >= 50) return 'warning';
+            return 'success';
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
     </script>
 </body>
 </html> 
