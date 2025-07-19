@@ -1,0 +1,55 @@
+{
+  "name": "Network Intelligence - Development",
+  "description": "Real-time network intelligence and security monitoring platform - Development Environment",
+  "repository": "https://github.com/benjaminrust/network-intelligence-dev",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["python", "flask", "network-intelligence", "security", "monitoring"],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "development",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "Flask secret key",
+      "generator": "secret",
+      "required": true
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "as": "DATABASE"
+    },
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "scripts": {
+    "postdeploy": "python -c \"print('Development app deployed successfully!')\""
+  },
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "python -m pytest tests/",
+        "test-setup": "python setup_db.py"
+      },
+      "env": {
+        "FLASK_ENV": "testing",
+        "TESTING": "true"
+      }
+    }
+  }
+} 
