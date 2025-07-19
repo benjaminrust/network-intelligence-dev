@@ -4,11 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Intelligence Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        .jumbotron {
+            background: #532F8C;
+            color: white;
+            padding-bottom: 80px;
+        }
+        .jumbotron .btn-primary {
+            background-color: #845ac7;
+            border-color: #845ac7;
+            margin-top: 20px;
+            padding: 15px 30px;
+        }
+        .jumbotron .btn-primary:hover {
+            background-color: #7646c1;
+        }
+        .jumbotron p {
+            color: #d9ccee;
+            max-width: 75%;
+            margin: 1em auto 2em;
+        }
+        .qa-section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .alert-info {
+            background-color: #d9ccee;
+            border-color: #845ac7;
+            color: #532F8C;
+        }
         .status-card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            text-align: center;
             transition: all 0.3s ease;
         }
         .status-card:hover {
@@ -16,11 +53,12 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #532F8C 0%, #845ac7 100%);
             color: white;
-            border-radius: 15px;
+            border-radius: 4px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
         .alert-high {
             border-left: 5px solid #dc3545;
@@ -39,28 +77,69 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        .network-map {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            min-height: 300px;
-        }
         .threat-indicator {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
+            background: #f8f9fa;
+            border: 1px solid #845ac7;
+            border-radius: 4px;
             padding: 10px;
             margin: 5px 0;
         }
+        .answer-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #845ac7;
+        }
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            float: right;
+        }
+        .btn-clear:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        .form-control {
+            border-color: #845ac7;
+        }
+        .form-control:focus {
+            border-color: #532F8C;
+            box-shadow: 0 0 0 0.2rem rgba(83, 47, 140, 0.25);
+        }
+        .btn-primary {
+            background-color: #845ac7;
+            border-color: #845ac7;
+        }
+        .btn-primary:hover {
+            background-color: #7646c1;
+            border-color: #7646c1;
+        }
+        .navbar {
+            background-color: #532F8C !important;
+            border-color: #532F8C !important;
+        }
+        .navbar-brand {
+            color: white !important;
+        }
+        .navbar-text {
+            color: #d9ccee !important;
+        }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body>
+    <nav class="navbar navbar-default">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-shield-alt"></i> Network Intelligence
-            </a>
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-shield-alt"></i> Network Intelligence
+                </a>
+            </div>
+            <div class="navbar-right">
                 <span class="navbar-text">
                     <i class="fas fa-circle text-success real-time-indicator"></i> Live Monitoring
                 </span>
@@ -68,49 +147,52 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="jumbotron text-center">
+        <div class="container">
+            <h1>Network Intelligence Dashboard</h1>
+            <p>Real-time security monitoring, threat detection, and network analytics platform powered by advanced AI and machine learning.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="alert alert-info text-center" role="alert">
+            Monitor network traffic, detect threats, and analyze security events in real-time with our comprehensive intelligence platform.
+        </div>
+
         <!-- Status Overview -->
-        <div class="row mb-4">
+        <div class="row">
             <div class="col-md-3">
-                <div class="card status-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-network-wired fa-2x text-primary mb-2"></i>
-                        <h5 class="card-title">Network Status</h5>
-                        <h3 class="text-success" id="network-status">Operational</h3>
-                    </div>
+                <div class="status-card">
+                    <i class="fas fa-network-wired fa-2x text-primary mb-2"></i>
+                    <h5>Network Status</h5>
+                    <h3 class="text-success" id="network-status">Operational</h3>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card status-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
-                        <h5 class="card-title">Active Alerts</h5>
-                        <h3 class="text-warning" id="active-alerts">0</h3>
-                    </div>
+                <div class="status-card">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                    <h5>Active Alerts</h5>
+                    <h3 class="text-warning" id="active-alerts">0</h3>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card status-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
-                        <h5 class="card-title">Risk Score</h5>
-                        <h3 class="text-info" id="risk-score">0</h3>
-                    </div>
+                <div class="status-card">
+                    <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                    <h5>Risk Score</h5>
+                    <h3 class="text-info" id="risk-score">0</h3>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card status-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-database fa-2x text-secondary mb-2"></i>
-                        <h5 class="card-title">Events Today</h5>
-                        <h3 class="text-secondary" id="events-today">0</h3>
-                    </div>
+                <div class="status-card">
+                    <i class="fas fa-database fa-2x text-secondary mb-2"></i>
+                    <h5>Events Today</h5>
+                    <h3 class="text-secondary" id="events-today">0</h3>
                 </div>
             </div>
         </div>
 
         <!-- Real-time Metrics -->
-        <div class="row mb-4">
+        <div class="row">
             <div class="col-md-6">
                 <div class="metric-card">
                     <h5><i class="fas fa-chart-bar"></i> Network Traffic</h5>
@@ -129,15 +211,11 @@
         <div class="row">
             <!-- Recent Events -->
             <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-list"></i> Recent Security Events</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="events-list">
-                            <div class="text-center text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Loading events...
-                            </div>
+                <div class="qa-section">
+                    <h3><i class="fas fa-list"></i> Recent Security Events</h3>
+                    <div id="events-list">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading events...
                         </div>
                     </div>
                 </div>
@@ -145,29 +223,21 @@
 
             <!-- Threat Intelligence -->
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-bug"></i> Threat Intelligence</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="threat-indicators">
-                            <div class="text-center text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Loading threats...
-                            </div>
+                <div class="qa-section">
+                    <h3><i class="fas fa-bug"></i> Threat Intelligence</h3>
+                    <div id="threat-indicators">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading threats...
                         </div>
                     </div>
                 </div>
 
                 <!-- Cache Status -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h5><i class="fas fa-memory"></i> Cache Status</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="cache-stats">
-                            <div class="text-center text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Loading cache stats...
-                            </div>
+                <div class="qa-section">
+                    <h3><i class="fas fa-memory"></i> Cache Status</h3>
+                    <div id="cache-stats">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading cache stats...
                         </div>
                     </div>
                 </div>
@@ -175,38 +245,37 @@
         </div>
 
         <!-- Network Analysis -->
-        <div class="row mt-4">
+        <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-search"></i> Network Analysis</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <form id="traffic-analysis-form">
-                                    <div class="mb-3">
-                                        <label for="source-ip" class="form-label">Source IP</label>
-                                        <input type="text" class="form-control" id="source-ip" placeholder="192.168.1.1">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="connection-count" class="form-label">Connection Count</label>
-                                        <input type="number" class="form-control" id="connection-count" value="100">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="failed-attempts" class="form-label">Failed Auth Attempts</label>
-                                        <input type="number" class="form-control" id="failed-attempts" value="5">
-                                    </div>
+                <div class="qa-section">
+                    <h3><i class="fas fa-search"></i> Network Analysis</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form id="traffic-analysis-form">
+                                <div class="form-group">
+                                    <label for="source-ip">Source IP:</label>
+                                    <input type="text" class="form-control" id="source-ip" placeholder="192.168.1.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="connection-count">Connection Count:</label>
+                                    <input type="number" class="form-control" id="connection-count" value="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="failed-attempts">Failed Auth Attempts:</label>
+                                    <input type="number" class="form-control" id="failed-attempts" value="5">
+                                </div>
+                                <div class="button-group">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-search"></i> Analyze Traffic
                                     </button>
-                                </form>
-                            </div>
-                            <div class="col-md-6">
-                                <div id="analysis-results">
-                                    <div class="text-center text-muted">
-                                        <i class="fas fa-chart-line"></i> Analysis results will appear here
-                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="analysis-results">
+                                <div class="answer-box">
+                                    <h4><i class="fas fa-chart-line"></i> Analysis Results</h4>
+                                    <p class="text-muted">Analysis results will appear here</p>
                                 </div>
                             </div>
                         </div>
@@ -216,14 +285,15 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script>
         // Global variables
         let trafficChart, securityChart;
         let updateInterval;
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
             initializeCharts();
             loadDashboardData();
             setupEventListeners();
@@ -309,116 +379,124 @@
         }
 
         function loadNetworkStatus() {
-            fetch('/api/network/status')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('network-status').textContent = data.status;
-                    document.getElementById('active-alerts').textContent = data.active_alerts;
+            $.get('/api/network/status')
+                .done(function(data) {
+                    $('#network-status').text(data.status);
+                    $('#active-alerts').text(data.active_alerts);
                     
                     // Update metrics
                     if (data.stats) {
-                        document.getElementById('events-today').textContent = data.stats.total_connections || 0;
+                        $('#events-today').text(data.stats.total_connections || 0);
                     }
                 })
-                .catch(error => console.error('Error loading network status:', error));
+                .fail(function(error) {
+                    console.error('Error loading network status:', error);
+                });
         }
 
         function loadSecurityEvents() {
-            fetch('/api/events?limit=10')
-                .then(response => response.json())
-                .then(data => {
-                    const eventsList = document.getElementById('events-list');
+            $.get('/api/events?limit=10')
+                .done(function(data) {
+                    const eventsList = $('#events-list');
                     if (data.events && data.events.length > 0) {
-                        eventsList.innerHTML = data.events.map(event => `
-                            <div class="alert alert-${getSeverityClass(event.severity)} mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <strong>${event.event_type}</strong> - ${event.source_ip || 'Unknown IP'}
+                        eventsList.html(data.events.map(function(event) {
+                            return `
+                                <div class="answer-box alert-${getSeverityClass(event.severity)}">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h4>${event.event_type} - ${event.source_ip || 'Unknown IP'}</h4>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <small>${new Date(event.timestamp).toLocaleTimeString()}</small>
+                                        </div>
                                     </div>
-                                    <small>${new Date(event.timestamp).toLocaleTimeString()}</small>
+                                    <div class="mt-1">
+                                        <span class="label label-${getSeverityClass(event.severity)}">${event.severity}</span>
+                                        <span class="label label-default">Risk: ${event.risk_score || 0}</span>
+                                    </div>
                                 </div>
-                                <div class="mt-1">
-                                    <span class="badge bg-${getSeverityClass(event.severity)}">${event.severity}</span>
-                                    <span class="badge bg-secondary">Risk: ${event.risk_score || 0}</span>
-                                </div>
-                            </div>
-                        `).join('');
+                            `;
+                        }).join(''));
                     } else {
-                        eventsList.innerHTML = '<div class="text-center text-muted">No recent events</div>';
+                        eventsList.html('<div class="text-center text-muted">No recent events</div>');
                     }
                 })
-                .catch(error => {
+                .fail(function(error) {
                     console.error('Error loading security events:', error);
-                    document.getElementById('events-list').innerHTML = '<div class="text-center text-danger">Error loading events</div>';
+                    $('#events-list').html('<div class="text-center text-danger">Error loading events</div>');
                 });
         }
 
         function loadThreatIndicators() {
-            fetch('/api/threats/indicators')
-                .then(response => response.json())
-                .then(data => {
-                    const threatList = document.getElementById('threat-indicators');
+            $.get('/api/threats/indicators')
+                .done(function(data) {
+                    const threatList = $('#threat-indicators');
                     if (data.indicators && data.indicators.length > 0) {
-                        threatList.innerHTML = data.indicators.map(indicator => `
-                            <div class="threat-indicator">
-                                <div class="d-flex justify-content-between">
-                                    <strong>${indicator.type}</strong>
-                                    <span class="badge bg-${getConfidenceClass(indicator.confidence)}">${indicator.confidence}</span>
+                        threatList.html(data.indicators.map(function(indicator) {
+                            return `
+                                <div class="threat-indicator">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <strong>${indicator.type}</strong>
+                                        </div>
+                                        <div class="col-md-4 text-right">
+                                            <span class="label label-${getConfidenceClass(indicator.confidence)}">${indicator.confidence}</span>
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted">${indicator.value}</div>
+                                    <div class="small">${indicator.description}</div>
                                 </div>
-                                <div class="small text-muted">${indicator.value}</div>
-                                <div class="small">${indicator.description}</div>
-                            </div>
-                        `).join('');
+                            `;
+                        }).join(''));
                     } else {
-                        threatList.innerHTML = '<div class="text-center text-muted">No threat indicators</div>';
+                        threatList.html('<div class="text-center text-muted">No threat indicators</div>');
                     }
                 })
-                .catch(error => {
+                .fail(function(error) {
                     console.error('Error loading threat indicators:', error);
-                    document.getElementById('threat-indicators').innerHTML = '<div class="text-center text-danger">Error loading threats</div>';
+                    $('#threat-indicators').html('<div class="text-center text-danger">Error loading threats</div>');
                 });
         }
 
         function loadCacheStats() {
-            fetch('/api/cache/stats')
-                .then(response => response.json())
-                .then(data => {
-                    const cacheStats = document.getElementById('cache-stats');
+            $.get('/api/cache/stats')
+                .done(function(data) {
+                    const cacheStats = $('#cache-stats');
                     if (data && Object.keys(data).length > 0) {
-                        cacheStats.innerHTML = `
+                        cacheStats.html(`
                             <div class="row text-center">
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="small text-muted">Memory</div>
-                                    <div class="fw-bold">${data.used_memory_human || 'N/A'}</div>
+                                    <div class="h4">${data.used_memory_human || 'N/A'}</div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="small text-muted">Clients</div>
-                                    <div class="fw-bold">${data.connected_clients || 0}</div>
+                                    <div class="h4">${data.connected_clients || 0}</div>
                                 </div>
                             </div>
-                            <div class="row text-center mt-2">
-                                <div class="col-6">
+                            <div class="row text-center">
+                                <div class="col-md-6">
                                     <div class="small text-muted">Hits</div>
-                                    <div class="fw-bold">${data.keyspace_hits || 0}</div>
+                                    <div class="h4">${data.keyspace_hits || 0}</div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-6">
                                     <div class="small text-muted">Misses</div>
-                                    <div class="fw-bold">${data.keyspace_misses || 0}</div>
+                                    <div class="h4">${data.keyspace_misses || 0}</div>
                                 </div>
                             </div>
-                        `;
+                        `);
                     } else {
-                        cacheStats.innerHTML = '<div class="text-center text-muted">Cache stats unavailable</div>';
+                        cacheStats.html('<div class="text-center text-muted">Cache stats unavailable</div>');
                     }
                 })
-                .catch(error => {
+                .fail(function(error) {
                     console.error('Error loading cache stats:', error);
-                    document.getElementById('cache-stats').innerHTML = '<div class="text-center text-danger">Error loading cache stats</div>';
+                    $('#cache-stats').html('<div class="text-center text-danger">Error loading cache stats</div>');
                 });
         }
 
         function setupEventListeners() {
-            document.getElementById('traffic-analysis-form').addEventListener('submit', function(e) {
+            $('#traffic-analysis-form').on('submit', function(e) {
                 e.preventDefault();
                 analyzeTraffic();
             });
@@ -426,50 +504,54 @@
 
         function analyzeTraffic() {
             const trafficData = {
-                source_ip: document.getElementById('source-ip').value,
-                connection_count: parseInt(document.getElementById('connection-count').value),
-                failed_auth_attempts: parseInt(document.getElementById('failed-attempts').value)
+                source_ip: $('#source-ip').val(),
+                connection_count: parseInt($('#connection-count').val()),
+                failed_auth_attempts: parseInt($('#failed-attempts').val())
             };
 
-            fetch('/api/network/analyze', {
+            $.ajax({
+                url: '/api/network/analyze',
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(trafficData)
+                contentType: 'application/json',
+                data: JSON.stringify(trafficData)
             })
-            .then(response => response.json())
-            .then(data => {
-                const resultsDiv = document.getElementById('analysis-results');
-                resultsDiv.innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h6>Analysis Results</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
+            .done(function(data) {
+                const resultsDiv = $('#analysis-results');
+                resultsDiv.html(`
+                    <div class="answer-box">
+                        <h4><i class="fas fa-chart-line"></i> Analysis Results</h4>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <strong>Risk Score:</strong> 
-                                <span class="badge bg-${getRiskClass(data.risk_score)}">${data.risk_score}</span>
+                                <span class="label label-${getRiskClass(data.risk_score)}">${data.risk_score}</span>
                             </div>
-                            <div class="mb-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <strong>Threats Detected:</strong>
                                 <ul class="list-unstyled">
-                                    ${data.threats_detected.map(threat => `<li><i class="fas fa-exclamation-triangle text-warning"></i> ${threat}</li>`).join('')}
+                                    ${data.threats_detected.map(function(threat) {
+                                        return `<li><i class="fas fa-exclamation-triangle text-warning"></i> ${threat}</li>`;
+                                    }).join('')}
                                 </ul>
                             </div>
-                            <div class="mb-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <strong>Recommendations:</strong>
                                 <ul class="list-unstyled">
-                                    ${data.recommendations.map(rec => `<li><i class="fas fa-lightbulb text-info"></i> ${rec}</li>`).join('')}
+                                    ${data.recommendations.map(function(rec) {
+                                        return `<li><i class="fas fa-lightbulb text-info"></i> ${rec}</li>`;
+                                    }).join('')}
                                 </ul>
                             </div>
                         </div>
                     </div>
-                `;
+                `);
             })
-            .catch(error => {
+            .fail(function(error) {
                 console.error('Error analyzing traffic:', error);
-                document.getElementById('analysis-results').innerHTML = '<div class="alert alert-danger">Error analyzing traffic</div>';
+                $('#analysis-results').html('<div class="alert alert-danger">Error analyzing traffic</div>');
             });
         }
 
@@ -478,7 +560,7 @@
                 case 'high': return 'danger';
                 case 'medium': return 'warning';
                 case 'low': return 'success';
-                default: return 'secondary';
+                default: return 'default';
             }
         }
 
@@ -487,7 +569,7 @@
                 case 'high': return 'danger';
                 case 'medium': return 'warning';
                 case 'low': return 'success';
-                default: return 'secondary';
+                default: return 'default';
             }
         }
 
@@ -498,7 +580,7 @@
         }
 
         // Cleanup on page unload
-        window.addEventListener('beforeunload', function() {
+        $(window).on('beforeunload', function() {
             if (updateInterval) {
                 clearInterval(updateInterval);
             }
