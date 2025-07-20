@@ -208,6 +208,58 @@ class CacheManager:
             logger.error(f"Error getting analytics: {e}")
             return None
     
+    # AI Inference Cache
+    def cache_inference_result(self, inference_type, result, ttl=1800):
+        """Cache AI inference result"""
+        if not self.is_connected():
+            return False
+        
+        try:
+            key = f"inference:{inference_type}:{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            self.redis_client.setex(key, ttl, json.dumps(result))
+            
+            # Also cache latest result for quick access
+            latest_key = f"inference:latest:{inference_type}"
+            self.redis_client.setex(latest_key, ttl, json.dumps(result))
+            return True
+        except Exception as e:
+            logger.error(f"Error caching inference result: {e}")
+            return False
+    
+    def get_latest_inference_result(self, inference_type):
+        """Get latest inference result for a type"""
+        if not self.is_connected():
+            return None
+        
+        try:
+            key = f"inference:latest:{inference_type}"
+            data = self.redis_client.get(key)
+            return json.loads(data) if data else None
+        except Exception as e:
+            logger.error(f"Error getting latest inference result: {e}")
+            return None
+    
+    def get_inference_history(self, inference_type, limit=10):
+        """Get inference history for a type"""
+        if not self.is_connected():
+            return []
+        
+        try:
+            pattern = f"inference:{inference_type}:*"
+            keys = self.redis_client.keys(pattern)
+            keys.sort(reverse=True)  # Most recent first
+            
+            results = []
+            for key in keys[:limit]:
+                data = self.redis_client.get(key)
+                if data:
+                    results.append(json.loads(data))
+            
+            return results
+        except Exception as e:
+            logger.error(f"Error getting inference history: {e}")
+            return []
+    
     # Rate Limiting
     def check_rate_limit(self, key, limit, window):
         """Check rate limit for a key"""

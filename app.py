@@ -454,6 +454,140 @@ def clear_cache():
         logger.error(f"Error clearing cache: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
+# AI Inference Endpoints
+@app.route('/api/ai-inference', methods=['POST'])
+def ai_inference():
+    """AI inference endpoint for network intelligence"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        inference_type = data.get('type', 'traffic_analysis')
+        input_data = data.get('data', {})
+        
+        # Mock AI inference for demo purposes
+        # In production, this would call Heroku Managed Inference
+        if inference_type == 'traffic_analysis':
+            result = {
+                'inference_type': 'traffic_analysis',
+                'risk_score': 75,
+                'threat_probability': 0.85,
+                'recommendations': [
+                    'Block source IP temporarily',
+                    'Increase monitoring frequency',
+                    'Review firewall rules'
+                ],
+                'ai_confidence': 0.92,
+                'processing_time_ms': 150,
+                'model_version': 'v1.0.0'
+            }
+        elif inference_type == 'threat_classification':
+            result = {
+                'inference_type': 'threat_classification',
+                'threat_type': 'DDoS',
+                'confidence': 0.88,
+                'severity': 'high',
+                'mitigation_strategy': 'Rate limiting + IP blocking',
+                'processing_time_ms': 200,
+                'model_version': 'v1.0.0'
+            }
+        else:
+            result = {
+                'inference_type': inference_type,
+                'status': 'unknown_type',
+                'message': f'Inference type {inference_type} not supported'
+            }
+        
+        # Store inference result in cache
+        if cache_manager:
+            cache_manager.cache_inference_result(inference_type, result)
+        
+        # Record metric
+        if network_analytics:
+            network_analytics.record_metric({
+                'metric_name': 'ai_inference',
+                'metric_value': result.get('processing_time_ms', 0),
+                'metric_unit': 'ms',
+                'source': 'ai_inference',
+                'tags': {'type': inference_type, 'confidence': result.get('ai_confidence', 0)}
+            })
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        logger.error(f"Error in AI inference: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/ai-inference/batch', methods=['POST'])
+def ai_inference_batch():
+    """Batch AI inference endpoint"""
+    try:
+        data = request.get_json()
+        if not data or 'requests' not in data:
+            return jsonify({'error': 'No batch requests provided'}), 400
+        
+        batch_results = []
+        for i, request_data in enumerate(data['requests']):
+            # Process each request individually
+            result = {
+                'request_id': i,
+                'inference_type': request_data.get('type', 'unknown'),
+                'status': 'processed',
+                'result': {
+                    'risk_score': 65 + (i * 5),
+                    'confidence': 0.8 + (i * 0.02),
+                    'processing_time_ms': 100 + (i * 10)
+                }
+            }
+            batch_results.append(result)
+        
+        return jsonify({
+            'batch_id': str(uuid.uuid4()),
+            'total_requests': len(batch_results),
+            'results': batch_results,
+            'processing_time_ms': sum(r['result']['processing_time_ms'] for r in batch_results)
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in batch AI inference: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/ai-inference/models')
+def list_ai_models():
+    """List available AI models"""
+    models = [
+        {
+            'id': 'traffic-analysis-v1',
+            'name': 'Network Traffic Analysis',
+            'version': '1.0.0',
+            'description': 'Analyzes network traffic patterns for threat detection',
+            'supported_types': ['traffic_analysis', 'anomaly_detection'],
+            'status': 'available'
+        },
+        {
+            'id': 'threat-classification-v1',
+            'name': 'Threat Classification',
+            'version': '1.0.0',
+            'description': 'Classifies security threats and provides mitigation strategies',
+            'supported_types': ['threat_classification', 'malware_detection'],
+            'status': 'available'
+        },
+        {
+            'id': 'behavioral-analysis-v1',
+            'name': 'Behavioral Analysis',
+            'version': '1.0.0',
+            'description': 'Analyzes user and system behavior patterns',
+            'supported_types': ['behavioral_analysis', 'user_profiling'],
+            'status': 'available'
+        }
+    ]
+    
+    return jsonify({
+        'models': models,
+        'total': len(models)
+    })
+
 # Background monitoring task
 def background_monitor():
     """Background task for continuous monitoring"""
