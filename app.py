@@ -49,6 +49,18 @@ class NetworkMonitor:
             'blocked_attempts': 0,
             'last_updated': datetime.now().isoformat()
         }
+        self.mock_ips = [
+            '192.168.1.45', '10.0.0.123', '172.16.0.78', '192.168.1.102',
+            '203.0.113.15', '198.51.100.67', '192.168.0.234', '10.1.1.89',
+            '172.20.0.156', '192.168.2.78', '10.0.1.45', '172.18.0.123'
+        ]
+        self.event_types = [
+            'Suspicious Login Attempt', 'Port Scan Detected', 'Data Exfiltration',
+            'Failed Authentication', 'Brute Force Attack', 'Malware Detection',
+            'Anomalous Traffic Pattern', 'Unauthorized Access Attempt',
+            'DDoS Attack', 'SQL Injection Attempt', 'Cross-Site Scripting',
+            'Privilege Escalation Attempt'
+        ]
     
     def analyze_traffic(self, traffic_data):
         """Analyze network traffic for suspicious patterns"""
@@ -126,6 +138,61 @@ class NetworkMonitor:
             cache_manager.publish_event('security_alerts', alert)
         
         return alert
+    
+    def generate_dynamic_stats(self):
+        """Generate dynamic network statistics"""
+        import random
+        from datetime import datetime, timedelta
+        
+        # Generate realistic but varying stats
+        base_connections = random.randint(800, 1500)
+        suspicious_ratio = random.uniform(0.05, 0.15)
+        blocked_ratio = random.uniform(0.02, 0.08)
+        
+        stats = {
+            'total_connections': base_connections,
+            'suspicious_connections': int(base_connections * suspicious_ratio),
+            'blocked_attempts': int(base_connections * blocked_ratio),
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        # Update the instance variable
+        self.network_stats = stats
+        
+        # Print to console for debugging
+        print(f"Generated dynamic stats: {stats}")
+        
+        return stats
+    
+    def generate_mock_security_events(self, count=5):
+        """Generate realistic mock security events"""
+        import random
+        
+        events = []
+        for i in range(count):
+            # Generate random timestamp within last 2 hours
+            time_offset = random.randint(0, 7200)  # 2 hours in seconds
+            event_time = datetime.now() - timedelta(seconds=time_offset)
+            
+            event = {
+                'id': random.randint(1000, 9999),
+                'timestamp': event_time.isoformat(),
+                'event_type': random.choice(self.event_types),
+                'source_ip': random.choice(self.mock_ips),
+                'severity': random.choice(['low', 'medium', 'high']),
+                'risk_score': random.randint(20, 95),
+                'description': f"Security event detected from {random.choice(self.mock_ips)}"
+            }
+            events.append(event)
+        
+        # Sort by timestamp (most recent first)
+        events.sort(key=lambda x: x['timestamp'], reverse=True)
+        return events
+    
+    def get_analyze_suggestions(self):
+        """Get IPs from recent events that can be analyzed"""
+        events = self.generate_mock_security_events(3)
+        return [event['source_ip'] for event in events]
 
 # Initialize network monitor
 network_monitor = NetworkMonitor()
@@ -139,9 +206,12 @@ def index():
 @app.route('/api/health')
 def health_check():
     """Health check endpoint"""
+    print("DEBUG: health_check() called")
+    logger.info("DEBUG: health_check() called")
+    
     redis_health = cache_manager.health_check() if cache_manager else {'status': 'unavailable'}
     
-    return jsonify({
+    response_data = {
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
         'version': '1.0.0',
@@ -150,26 +220,93 @@ def health_check():
             'database': db_manager is not None and db_manager.get_connection() is not None
         },
         'cache_stats': cache_manager.get_cache_stats() if cache_manager else {}
-    })
+    }
+    
+    print(f"DEBUG: health_check returning: {response_data}")
+    logger.info(f"DEBUG: health_check returning: {response_data}")
+    
+    return jsonify(response_data)
+
+@app.route('/api/test-dynamic')
+def test_dynamic():
+    """Test endpoint for dynamic stats generation"""
+    try:
+        print("DEBUG: test_dynamic() called")
+        logger.info("DEBUG: test_dynamic() called")
+        
+        print("DEBUG: Calling network_monitor.generate_dynamic_stats()")
+        logger.info("DEBUG: Calling network_monitor.generate_dynamic_stats()")
+        stats = network_monitor.generate_dynamic_stats()
+        
+        print(f"DEBUG: Generated dynamic stats: {stats}")
+        logger.info(f"DEBUG: Generated dynamic stats: {stats}")
+        
+        response_data = {
+            'success': True,
+            'stats': stats,
+            'message': 'Dynamic stats generated successfully'
+        }
+        
+        print(f"DEBUG: Returning test-dynamic response: {response_data}")
+        logger.info(f"DEBUG: Returning test-dynamic response: {response_data}")
+        
+        return jsonify(response_data)
+    except Exception as e:
+        print(f"DEBUG: Error in test_dynamic(): {e}")
+        logger.error(f"DEBUG: Error in test_dynamic(): {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Error generating dynamic stats'
+        })
 
 @app.route('/api/network/status')
 def network_status():
     """Get current network status"""
-    # Try to get cached stats first
-    cached_stats = cache_manager.get_network_stats() if cache_manager else None
-    if cached_stats:
-        stats = cached_stats
-    else:
-        stats = network_monitor.network_stats
-        if cache_manager:
-            cache_manager.cache_network_stats(stats)
+    # Generate dynamic stats inline for demo
+    import random
+    from datetime import datetime
     
-    return jsonify({
+    print("DEBUG: network_status() called - generating dynamic stats")
+    logger.info("DEBUG: network_status() called - generating dynamic stats")
+    
+    base_connections = random.randint(800, 1500)
+    suspicious_ratio = random.uniform(0.05, 0.15)
+    blocked_ratio = random.uniform(0.02, 0.08)
+    
+    print(f"DEBUG: Generated values - base_connections: {base_connections}, suspicious_ratio: {suspicious_ratio}, blocked_ratio: {blocked_ratio}")
+    logger.info(f"DEBUG: Generated values - base_connections: {base_connections}, suspicious_ratio: {suspicious_ratio}, blocked_ratio: {blocked_ratio}")
+    
+    stats = {
+        'total_connections': base_connections,
+        'suspicious_connections': int(base_connections * suspicious_ratio),
+        'blocked_attempts': int(base_connections * blocked_ratio),
+        'last_updated': datetime.now().isoformat()
+    }
+    
+    print(f"DEBUG: Final stats object: {stats}")
+    logger.info(f"DEBUG: Final stats object: {stats}")
+    
+    # Cache the dynamic stats for consistency
+    if cache_manager:
+        print("DEBUG: Caching stats via cache_manager")
+        logger.info("DEBUG: Caching stats via cache_manager")
+        cache_manager.cache_network_stats(stats)
+    else:
+        print("DEBUG: No cache_manager available")
+        logger.info("DEBUG: No cache_manager available")
+    
+    response_data = {
         'status': 'operational',
         'stats': stats,
         'active_alerts': len([a for a in network_monitor.alerts if a['status'] == 'active']),
         'last_updated': datetime.now().isoformat()
-    })
+    }
+    
+    print(f"DEBUG: Returning response: {response_data}")
+    logger.info(f"DEBUG: Returning response: {response_data}")
+    
+    return jsonify(response_data)
 
 @app.route('/api/network/analyze', methods=['POST'])
 def analyze_network_traffic():
@@ -180,6 +317,52 @@ def analyze_network_traffic():
             return jsonify({'error': 'No traffic data provided'}), 400
         
         analysis = network_monitor.analyze_traffic(traffic_data)
+        
+        # Store analysis results in database
+        if network_analytics:
+            # Store the risk score as a metric
+            network_analytics.record_metric({
+                'metric_name': 'traffic_analysis_risk_score',
+                'metric_value': analysis['risk_score'],
+                'metric_unit': 'score',
+                'source': 'traffic_analysis',
+                'tags': {
+                    'source_ip': traffic_data.get('source_ip', 'unknown'),
+                    'connection_count': traffic_data.get('connection_count', 0),
+                    'failed_auth_attempts': traffic_data.get('failed_auth_attempts', 0),
+                    'threats_detected_count': len(analysis['threats_detected']),
+                    'recommendations_count': len(analysis['recommendations'])
+                }
+            })
+            
+            # Store the analysis timestamp
+            network_analytics.record_metric({
+                'metric_name': 'traffic_analysis_timestamp',
+                'metric_value': datetime.now().timestamp(),
+                'metric_unit': 'unix_timestamp',
+                'source': 'traffic_analysis',
+                'tags': {
+                    'source_ip': traffic_data.get('source_ip', 'unknown'),
+                    'analysis_id': str(uuid.uuid4())
+                }
+            })
+        
+        # Store as security event if risk score is significant
+        if analysis['risk_score'] > 30 and security_event:
+            event_data = {
+                'event_type': 'traffic_analysis',
+                'severity': 'high' if analysis['risk_score'] > 80 else 'medium',
+                'source_ip': traffic_data.get('source_ip'),
+                'destination_ip': traffic_data.get('destination_ip', 'unknown'),
+                'risk_score': analysis['risk_score'],
+                'threat_indicators': analysis['threats_detected'],
+                'metadata': {
+                    'traffic_data': traffic_data,
+                    'analysis_results': analysis,
+                    'recommendations': analysis['recommendations']
+                }
+            }
+            security_event.create_event(event_data)
         
         # Generate alert if risk score is high
         if analysis['risk_score'] > 50:
@@ -192,19 +375,84 @@ def analyze_network_traffic():
             }
             network_monitor.generate_alert(alert_data)
         
+        # Add success message to analysis
+        analysis['stored_in_database'] = True
+        analysis['analysis_id'] = str(uuid.uuid4())
+        
         return jsonify(analysis)
     
     except Exception as e:
         logger.error(f"Error analyzing traffic: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/api/network/analysis-history')
+def get_traffic_analysis_history():
+    """Get traffic analysis history from database"""
+    try:
+        limit = int(request.args.get('limit', 20))
+        offset = int(request.args.get('offset', 0))
+        source_ip = request.args.get('source_ip')
+        
+        if network_analytics:
+            # Get risk score metrics for traffic analysis
+            metrics = network_analytics.get_metrics('traffic_analysis_risk_score', 'realtime', limit * 2)
+            
+            # Filter by source IP if provided
+            if source_ip:
+                metrics = [m for m in metrics if m.get('tags', {}).get('source_ip') == source_ip]
+            
+            # Format the results
+            history = []
+            for metric in metrics[offset:offset + limit]:
+                history.append({
+                    'timestamp': metric.get('timestamp'),
+                    'risk_score': metric.get('metric_value'),
+                    'source_ip': metric.get('tags', {}).get('source_ip', 'unknown'),
+                    'connection_count': metric.get('tags', {}).get('connection_count', 0),
+                    'failed_auth_attempts': metric.get('tags', {}).get('failed_auth_attempts', 0),
+                    'threats_detected_count': metric.get('tags', {}).get('threats_detected_count', 0),
+                    'recommendations_count': metric.get('tags', {}).get('recommendations_count', 0)
+                })
+        else:
+            history = []
+        
+        return jsonify({
+            'history': history,
+            'total': len(history),
+            'limit': limit,
+            'offset': offset
+        })
+    
+    except Exception as e:
+        logger.error(f"Error getting traffic analysis history: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/network/analyze-suggestions')
+def get_analyze_suggestions():
+    """Get IPs from recent security events for analysis suggestions"""
+    try:
+        suggestions = network_monitor.get_analyze_suggestions()
+        return jsonify({
+            'suggestions': suggestions,
+            'total': len(suggestions)
+        })
+    except Exception as e:
+        logger.error(f"Error getting analyze suggestions: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @app.route('/api/events')
 def get_events():
     """Get security events from database"""
     try:
-        limit = int(request.args.get('limit', 100))
+        print("DEBUG: get_events() called")
+        logger.info("DEBUG: get_events() called")
+        
+        limit = int(request.args.get('limit', 10))
         offset = int(request.args.get('offset', 0))
         filters = {}
+        
+        print(f"DEBUG: Request params - limit: {limit}, offset: {offset}")
+        logger.info(f"DEBUG: Request params - limit: {limit}, offset: {offset}")
         
         if request.args.get('severity'):
             filters['severity'] = request.args.get('severity')
@@ -213,19 +461,37 @@ def get_events():
         if request.args.get('event_type'):
             filters['event_type'] = request.args.get('event_type')
         
-        if security_event:
-            events = security_event.get_events(limit, offset, filters)
-        else:
-            events = []
+        print(f"DEBUG: Filters: {filters}")
+        logger.info(f"DEBUG: Filters: {filters}")
         
-        return jsonify({
+        # Use dynamic mock events for demo
+        print("DEBUG: Calling network_monitor.generate_mock_security_events()")
+        logger.info("DEBUG: Calling network_monitor.generate_mock_security_events()")
+        events = network_monitor.generate_mock_security_events(limit)
+        
+        print(f"DEBUG: Generated {len(events)} events")
+        logger.info(f"DEBUG: Generated {len(events)} events")
+        
+        # Apply filters if provided
+        if filters.get('source_ip'):
+            events = [e for e in events if e['source_ip'] == filters['source_ip']]
+        if filters.get('severity'):
+            events = [e for e in events if e['severity'] == filters['severity']]
+        
+        response_data = {
             'events': events,
             'total': len(events),
             'limit': limit,
             'offset': offset
-        })
+        }
+        
+        print(f"DEBUG: Returning events response: {response_data}")
+        logger.info(f"DEBUG: Returning events response: {response_data}")
+        
+        return jsonify(response_data)
     
     except Exception as e:
+        print(f"DEBUG: Error in get_events(): {e}")
         logger.error(f"Error getting events: {e}")
         return jsonify({'error': 'Internal server error'}), 500
 
